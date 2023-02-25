@@ -3,6 +3,7 @@
    [clojure.string :as string]
    ["marked" :as marked]))
 
+(.log js/console "MARKED: " marked)
 (defn leading-space-count [s]
   (when-let [ws (second (re-matches #"^([\s]*).*"  s))]
     (.-length ws)))
@@ -25,7 +26,7 @@
     (string/trim s)))
 
 (defn markdown-to-html [markdown-txt]
-  (marked markdown-txt))
+  (.parse marked markdown-txt))
 
 (defn matches-delim? [line]
   (re-matches #"^[\s]*```(\w*).*" line))
