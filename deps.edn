@@ -1,0 +1,16 @@
+{:paths
+ ["src"]
+
+ :deps
+ {lilactown/helix        {:mvn/version "0.1.9"}
+  sablono/sablono        {:mvn/version "0.8.6"}
+  reagent/reagent        {:mvn/version "1.2.0"}
+  dv/cljs-emotion        {:mvn/version "2022-12-27.0.0"}
+  org.clojure/core.async {:mvn/version "1.6.673"}}
+
+ :aliases
+ {:dev
+  {:extra-paths ["example_src" "resources" "example-resources"]
+   :extra-deps
+   {thheller/shadow-cljs {:mvn/version "2.21.0"}
+    binaryage/devtools   {:mvn/version "1.0.4"}}}}}

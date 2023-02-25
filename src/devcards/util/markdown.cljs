@@ -1,7 +1,7 @@
 (ns devcards.util.markdown
   (:require
    [clojure.string :as string]
-   [devcards-marked :as devcards-marked]))
+   ["marked" :as marked]))
 
 (defn leading-space-count [s]
   (when-let [ws (second (re-matches #"^([\s]*).*"  s))]
@@ -25,7 +25,7 @@
     (string/trim s)))
 
 (defn markdown-to-html [markdown-txt]
-  (js/DevcardsMarked markdown-txt))
+  (marked markdown-txt))
 
 (defn matches-delim? [line]
   (re-matches #"^[\s]*```(\w*).*" line))
@@ -75,13 +75,13 @@
      (fn [data-atom _] (bmi-component data-atom)) ;; object of focus
      {:height 180 :weight 80}                     ;; optional initial data
      {:inspect-data true :history true})          ;; optional devcard config options
-      
+
    ```
 # [Devcards](https://github.com/bhauman/devcards): the hard sell
-    
+
    The Devcards library is intended to make ClojureScript development
    a pure joy.
- 
+
    Devcards are intended to facilitate **interactive live
    development**. Devcards can be used in conjunction with figwheel but
    will also work with any form of live code reloading (repl, boot-reload, ...)
@@ -104,14 +104,14 @@
    this document.
 
    Let's look at an advanced Devcard:
-   
+
    ```
    (defcard bmi-calculator                        ;; optional symbol name
      \"*Code taken from Reagent readme.*\"          ;; optional markdown doc
      (fn [data-atom _] (bmi-component data-atom)) ;; object of focus
      {:height 180 :weight 80}                     ;; optional initial data
      {:inspect-data true :history true})          ;; optional devcard config options
-      
+
    ```
 
    The [defcard api](#!/devdemos.defcard_api)
@@ -123,10 +123,10 @@
 #_(devcards.core/defcard parse-out-code-blocks3
   (parse-out-blocks
    "# [Devcards](https://github.com/bhauman/devcards): the hard sell
-    
+
    The Devcards library is intended to make ClojureScript development
    a pure joy.
- 
+
    Devcards are intended to facilitate **interactive live
    development**. Devcards can be used in conjunction with figwheel but
    will also work with any form of live code reloading (repl, boot-reload, ...)
@@ -149,14 +149,14 @@
    this document.
 
    Let's look at an advanced Devcard:
-   
+
    ```
    (defcard bmi-calculator                        ;; optional symbol name
      \"*Code taken from Reagent readme.*\"          ;; optional markdown doc
      (fn [data-atom _] (bmi-component data-atom)) ;; object of focus
      {:height 180 :weight 80}                     ;; optional initial data
      {:inspect-data true :history true})          ;; optional devcard config options
-      
+
    ```
 
    The [defcard api](#!/devdemos.defcard_api)

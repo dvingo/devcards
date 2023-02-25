@@ -1,15 +1,13 @@
 (ns devcards.core
+  (:refer-clojure :exclude [munge defonce])
   (:require
-   [devcards.util.utils :as utils]
-   [cljs.compiler :refer (munge)]
-   [cljs.analyzer :as ana]
-   [cljs.analyzer.api :as ana-api]
-   [cljs.repl]
-   [cljs.test]
-   [cljs.env]
-   [clojure.pprint :refer [with-pprint-dispatch code-dispatch pprint]]
-   [clojure.java.io :as io])
-  (:refer-clojure :exclude (munge defonce)))
+    [devcards.util.utils :as utils]
+    [cljs.compiler :refer [munge]]
+    [cljs.analyzer.api :as ana-api]
+    [cljs.repl]
+    [cljs.test]
+    [cljs.env]
+    [clojure.pprint :refer [with-pprint-dispatch code-dispatch pprint]]))
 
 (defmacro start-devcard-ui!
   ([]
@@ -18,12 +16,12 @@
    `(devcards.core/start-devcard-ui!* ~options)))
 
 #_(defmacro start-single-card-ui! []
-  (enable-devcards!)
-  `(devcards.core/start-single-card-ui!*))
+    (enable-devcards!)
+    `(devcards.core/start-single-card-ui!*))
 
 (defmacro do [& exprs]
   (when (utils/devcards-active?)
-        `(do ~@exprs)))
+    `(do ~@exprs)))
 
 (defn get-ns [env]
   (-> env :ns :name name munge))
@@ -35,14 +33,14 @@
 (defmacro defcard*
   ([vname expr]
    (when (utils/devcards-active?)
-     `(devcards.core/register-card  ~{:path (name->path &env vname)
-                                      :func  `(fn [] ~expr)}))))
+     `(devcards.core/register-card ~{:path (name->path &env vname)
+                                     :func `(fn [] ~expr)}))))
 
 (defn card
   ([vname docu main-obj initial-data options]
    `(devcards.core/defcard* ~(symbol (name vname))
-      (devcards.core/card-base 
-       { :name          ~(name vname)
+      (devcards.core/card-base
+        {:name          ~(name vname)
          :documentation ~docu
          :main-obj      ~main-obj
          :initial-data  ~initial-data
@@ -56,14 +54,14 @@
 
 (defn optional-name [exprs default-name]
   (if (instance? clojure.lang.Named (first exprs)) [(first exprs) (rest exprs)]
-      [default-name exprs]))
+                                                   [default-name exprs]))
 
 (defn optional-doc [xs]
   (if (string? (first xs)) [(first xs) (rest xs)] [nil xs]))
 
 (defn parse-args [xs default-name]
   (let [[vname xs] (optional-name xs default-name)
-        [docu xs]  (optional-doc xs)]
+        [docu xs] (optional-doc xs)]
     (concat [vname docu] xs)))
 
 (defn merge-options [lit-opt-map options]
@@ -116,19 +114,19 @@
     `(reify devcards.core/IDevcardOptions
        (~'-devcard-options [this# devcard-opts#]
          (assoc devcard-opts#
-                :main-obj ~main-obj-body
-                
-                :options (merge ~default-options-literal
-                                (devcards.core/assert-options-map (:options devcard-opts#))))))))
+           :main-obj ~main-obj-body
+
+           :options (merge ~default-options-literal
+                      (devcards.core/assert-options-map (:options devcard-opts#))))))))
 
 ;; testing
 
 (defmacro tests [& parts]
   (when (utils/devcards-active?)
     `(devcards.core/test-card
-                 ~@(map (fn [p] (if (string? p)
-                                `(fn [] (devcards.core/test-doc ~p))
-                                `(fn [] ~p))) parts))))
+       ~@(map (fn [p] (if (string? p)
+                        `(fn [] (devcards.core/test-doc ~p))
+                        `(fn [] ~p))) parts))))
 
 (defmacro deftest [vname & parts]
   `(do
@@ -136,24 +134,24 @@
         `(devcards.core/defcard ~vname
            (devcards.core/tests ~@parts)))
      (cljs.test/deftest ~vname
-        ~@parts)))
+       ~@parts)))
 
 ;; reagent helpers
 
 (defmacro reagent [body]
   `(create-idevcard
-    (let [v# ~body]
-      (if (fn? v#)
-        (fn [data-atom# owner#] (reagent.core/as-element [v# data-atom# owner#]))
-        (reagent.core/as-element v#)))
-    {}))
+     (let [v# ~body]
+       (if (fn? v#)
+         (fn [data-atom# owner#] (reagent.core/as-element [v# data-atom# owner#]))
+         (reagent.core/as-element v#)))
+     {}))
 
 (defmacro defcard-rg [& exprs]
   (when (utils/devcards-active?)
     (let [[vname docu main initial-data options] (parse-card-args exprs 'reagent-card)]
       (card vname docu `(devcards.core/reagent ~main) initial-data (assoc
-                                                                    options
-                                                                    :watch-atom false)))))
+                                                                     options
+                                                                     :watch-atom false)))))
 
 ;; om helpers
 
@@ -161,12 +159,12 @@
   ([om-comp-fn om-options]
    (when (utils/devcards-active?)
      `(create-idevcard
-       (devcards.core/dom-node*
-        (fn [data-atom# node#]
-          (om.core/root ~om-comp-fn data-atom#
-                        (merge ~om-options
-                               {:target node#}))))
-       {:watch-atom true})))
+        (devcards.core/dom-node*
+          (fn [data-atom# node#]
+            (om.core/root ~om-comp-fn data-atom#
+              (merge ~om-options
+                {:target node#}))))
+        {:watch-atom true})))
   ([om-comp-fn]
    (when (utils/devcards-active?)
      `(om-root ~om-comp-fn {}))))
@@ -182,15 +180,15 @@
   ([om-next-comp om-next-reconciler]
    (when (utils/devcards-active?)
      `(create-idevcard
-       (devcards.core/dom-node*
-        (fn [data-atom# node#]
-          (let [state# (if (map? ~om-next-reconciler) (atom ~om-next-reconciler) data-atom#)
-                reconciler# (if (om.next/reconciler? ~om-next-reconciler)
-                              ~om-next-reconciler
-                              (om.next/reconciler {:state state#
-                                                   :parser (om.next/parser {:read (fn [] {:value data-atom#})})}))]
-            (om.next/add-root! reconciler# ~om-next-comp node#))))
-       {:watch-atom false})))
+        (devcards.core/dom-node*
+          (fn [data-atom# node#]
+            (let [state#      (if (map? ~om-next-reconciler) (atom ~om-next-reconciler) data-atom#)
+                  reconciler# (if (om.next/reconciler? ~om-next-reconciler)
+                                ~om-next-reconciler
+                                (om.next/reconciler {:state  state#
+                                                     :parser (om.next/parser {:read (fn [] {:value data-atom#})})}))]
+              (om.next/add-root! reconciler# ~om-next-comp node#))))
+        {:watch-atom false})))
   ([om-next-comp]
    (when (utils/devcards-active?)
      `(om-next-root ~om-next-comp nil))))
@@ -215,7 +213,7 @@
 (defmacro mkdn-pprint-code [obj]
   (when (utils/devcards-active?)
     `(mkdn-code
-      (devcards.util.utils/pprint-code ~obj))))
+       (devcards.util.utils/pprint-code ~obj))))
 
 (defmacro mkdn-pprint-source [obj]
   (when (utils/devcards-active?)
@@ -228,11 +226,11 @@
        (devcards.util.utils/pprint-str ~obj))))
 
 (defmacro all-front-matter-meta [filter-keyword]
-   (vec
+  (vec
     (filter
-     (or filter-keyword :front-matter)
-     (map
-      (fn [x] (assoc (meta x)
-                    :namespace `(quote ~x)
-                    :munged-namespace `(quote ~(munge x))))
-      (ana-api/all-ns)))))
+      (or filter-keyword :front-matter)
+      (map
+        (fn [x] (assoc (meta x)
+                  :namespace `(quote ~x)
+                  :munged-namespace `(quote ~(munge x))))
+        (ana-api/all-ns)))))

@@ -1,0 +1,25 @@
+{:deps
+ {:aliases [:dev]}
+
+ :builds
+ {:devcards-demos
+
+  {:target     :browser
+   :output-dir "example-resources/public/devcards/js/compiled"
+   ;:output-to            "example-resources/public/devcards/js/compiled/devdemos.js"
+   :asset-path "js/compiled/out"
+
+   :modules    {:devdemos {:init-fn devdemos.start-ui/main}}
+   :devtools   {:preloads         [devtools.preload]
+                :http-port        4001
+                :http-root        "example-resources/public"
+                :push-state/index "index.html"
+                ;:after-load       devdemos/main
+                }}
+  }
+
+ :website
+ {:target     :browser
+  :output-dir "site/out"
+  :asset-path "site/out"
+  :modules    {:main {:entries [devdemos.start-ui]}}}} }
