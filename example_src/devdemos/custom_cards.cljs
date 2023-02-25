@@ -1,9 +1,10 @@
 (ns devdemos.custom-cards
   (:require
-   [devcards.core :as dc]
-   [sablono.core :as sab :include-macros true])
+    [devcards.core :as dc]
+    [helix.core :as h :refer [$]]
+    [dv.emotion-helix-dom :as d])
   (:require-macros
-   [devcards.core :refer [defcard defcard-doc]]))
+    [devcards.core :refer [defcard defcard-doc]]))
 
 (defcard
   "# Extending Devcards
@@ -20,7 +21,7 @@ create some tooling on top of Devcards.
 Here is a sketch of such usage:
 
 ```clojure
-(defn graph-state-overtime [state-atom state-filter] 
+(defn graph-state-overtime [state-atom state-filter]
   ...
   code that does some cool graphing
   ...)
@@ -28,8 +29,8 @@ Here is a sketch of such usage:
 (defcard state-over-time-view
   (fn [state _]
     ;; return a ReactElement
-    (sab/html 
-      [:div 
+    (sab/html
+      [:div
          (your-component state)
          (graph-state-overtime state :x)]))
   ;; initial state
@@ -44,16 +45,16 @@ convenient to use.
 (defmacro def-state-plot-card [vname component init-state filter-fn]
    `(defcard ~vname
         (fn [state# _]
-           (sab/html 
-             [:div 
+           (sab/html
+             [:div
                (~component state)
                (graph-state-overtime state# ~filter-fn)]])
         ~init-state))
 
 ;; use this in a cljs namespace
-(def-state-plot-card cool-state-plot 
+(def-state-plot-card cool-state-plot
   my-component
-  {:x 0} 
+  {:x 0}
   :x)
 ```
 
@@ -96,7 +97,7 @@ intercept the arguments that have been passed to the original
   "As you can see above, we are intercepting the options that were
   parsed out by the `defcard` macro and we have a chance to operate on
   them before they are sent to the underlying system.
-  
+
   These options are:
 
   * `:name` - the name of the card (changing this affects nothing)
@@ -128,9 +129,9 @@ And you can see this card rendered below:
   (reify dc/IDevcardOptions
     (-devcard-options [_ opts]
       (assoc opts
-             :path
-             [:devdemos.custom_cards
-              :this-is-a-changed-path-name]))))
+        :path
+        [:devdemos.custom_cards
+         :this-is-a-changed-path-name]))))
 
 (defcard
   "The above card's heading has been altered from `example-2` to
@@ -185,25 +186,18 @@ value.
   (reify dc/IDevcardOptions
     (-devcard-options [_ opts]
       (assoc opts
-             :main-obj
-             (fn [state owner]
-               (sab/html
-                [:div
-                 [:button
-                  {:onClick
-                   (fn []
-                     (reset! state (:initial-data opts)))}
-                  "reset state"]
-                 (if (fn? component)
-                   (component state owner)
-                   component)]))))))
+        :main-obj
+        (fn [state owner]
+          (d/div
+            (d/button {:onClick (fn [] (reset! state (:initial-data opts)))} "reset state")
+            (if (fn? component)
+              (component state owner)
+              component)))))))
 
 (defn counter [state]
-  (sab/html
-   [:div
-    [:h3 "Counter : " (:count @state)]
-    [:button {:onClick #(swap! state (fn [s] (update-in s [:count] inc)))}
-      "inc"]]))
+  (d/div
+    (d/h3 "Counter : " (:count @state))
+    (d/button {:onClick #(swap! state (fn [s] (update-in s [:count] inc)))} "inc")))
 
 (defcard counter-example
   (state-reset (fn [state _] (counter state)))
@@ -252,7 +246,7 @@ You can create a card with the low level api
 
 Here is an example of using `register-card`:
 
-```clojure 
+```clojure
 (dc/register-card
  {:path [:devdemos.custom_cards
          :registered-card]
@@ -264,9 +258,9 @@ You can see this in action below
 ")
 
 (dc/register-card
- {:path [:devdemos.custom_cards
-         :registered-card]
-  :func (fn [] (sab/html [:h1 "** Registered card **"]))})
+  {:path [:devdemos.custom_cards
+          :registered-card]
+   :func (fn [] (d/h1 "** Registered card **"))})
 
 (defcard
   "## The `devcards.core/defcard*` macro
